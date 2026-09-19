@@ -1,9 +1,10 @@
 package csd230.lab1.pojos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 public class Cart {
-    private List<Product> items;
+    private List<Product> items = new ArrayList<>();
 
     public Cart() {
     }
