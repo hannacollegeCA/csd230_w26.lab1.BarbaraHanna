@@ -33,5 +33,18 @@ public abstract class ProductEntity implements Serializable, SaleableItem {
 
     @Override
     public String toString() {
-        return "ProductEntity{id=" + id + "}"; }
+        return "ProductEntity{id=" + id + "}";
+    }
+
+    @Column(nullable = false)
+    private double price;
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
 }
