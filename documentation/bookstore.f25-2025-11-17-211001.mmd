@@ -11,22 +11,20 @@ classDiagram
 
 
     class Product{
+        -Long id
         -String productId
+        -double price
+        -int copies
     }
 
     class Serializable{
         <<interface>>
     }
-    class Ticket{
-        +description
-        +price
-        +sellItem()
-    }
 
     class Cart{
         -Long id
         -List items
-        +addItem(Produt item)
+        +addItem(Product item)
         +getItems()
         +setItems(List items)
     }
@@ -47,8 +45,8 @@ classDiagram
 
     }
     class Book{
+        -String isbn
         -String author
-        +sellItem()
 
         +Book()
         +Book(String author)
@@ -60,7 +58,7 @@ classDiagram
     }
     class Magazine{
         -int orderQty
-        -java.util.Date currentIssue
+        -LocalDateTime currentIssue
 
         +Magazine()
         +Magazine(int orderQty, Date currentIssue, String title, double price, int copies)
@@ -81,4 +79,10 @@ classDiagram
         +sellItem()
         +getPrice()
 
+    }
+
+    class Ticket {
+    -String description
+    -double price
+    -String type
     }

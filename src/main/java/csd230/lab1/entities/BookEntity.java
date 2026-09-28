@@ -3,13 +3,13 @@ package csd230.lab1.entities;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 @Entity @DiscriminatorValue("BOOK")
-public class BookEntity extends PublicationEntity {
+public class BookEntity extends ProductEntity {
     private String isbn;
     private String author;
     public BookEntity() {}
-    public BookEntity(String t, double p, int c, String a) {
-        super(t, p, c);
-        this.author = a;
+    public BookEntity(String title, double price, int copies, String author, String isbn) {
+        super(title, price, copies);
+        this.author = author;
         this.isbn = isbn;
     }
 
@@ -27,6 +27,11 @@ public class BookEntity extends PublicationEntity {
 
     public void  setIsbn(String isbn) {
         this.isbn = isbn;
+    }
+
+    @Override
+    public void sellItem() {
+        System.out.println("Selling Book: " + getTitle() + " by " + author);
     }
 
     @Override
