@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Book Details</title>
+</head>
+<body>
+<h1>Book Details</h1>
+
+
+<!--
+    If a book was found, display all its information.
+    th:if checks if the "book" object exists.
+-->
+<div th:if="${book}">
+    <p><strong>ID:</strong> <span th:text="${book.id}"></span></p>
+    <p><strong>Title:</strong> <span th:text="${book.title}"></span></p>
+    <p><strong>Author:</strong> <span th:text="${book.author}"></span></p>
+    <p><strong>Price:</strong> <span th:text="${book.price}"></span></p>
+    <p><strong>Copies:</strong> <span th:text="${book.copies}"></span></p>
+</div>
+
+<!--
+    If no book was found (invalid ID), show a simple message.
+-->
+<div th:unless="${book}">
+    <p>No book found.</p>
+</div>
+
+<!-- Link back to the main list -->
+<a th:href="@{/books}">Back to List</a>
+</body>
+</html>

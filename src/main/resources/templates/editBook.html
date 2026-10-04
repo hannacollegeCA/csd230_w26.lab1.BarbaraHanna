@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Book</title>
+</head>
+<body>
+<h1>Edit Book</h1>
+
+<!--
+    This form loads the existing book data and sends the updated values
+    to the /books/edit/{id} endpoint.
+    th:object binds the form fields to the BookEntity.
+-->
+
+<form th:action="@{/books/edit/{id}(id=${book.id})}" th:object="${book}" method="post">
+    <!-- Hidden field to keep the book ID -->
+    <input type="hidden" th:field="*{id}" />
+
+    <!-- Hidden field to keep the book ID -->
+    <label>Title: <input type="text" th:field="*{title}" required /></label><br/><br/>
+
+    <!-- Book author input -->
+    <label>Author: <input type="text" th:field="*{author}" required /></label><br/><br/>
+
+    <!-- Book price input (decimal allowed) -->
+    <label>Price: <input type="number" step="0.01" th:field="*{price}" required /></label><br/><br/>
+
+    <!-- Number of copies available -->
+    <label>Copies: <input type="number" th:field="*{copies}" required /></label><br/><br/>
+
+    <!-- Submit button to update the book -->
+    <button type="submit">Update Book</button>
+</form>
+
+<br/>
+
+<!-- Link back to the main list -->
+<a th:href="@{/books}">Back to List</a>
+</body>
+</html>

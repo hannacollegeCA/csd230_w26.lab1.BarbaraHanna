@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Book</title>
+</head>
+<body>
+<h1>Add New Book</h1>
+
+<!--
+    This form sends the new book data to the /books/add endpoint.
+    th:object binds the form fields to the BookEntity model.
+-->
+
+<form th:action="@{/books/add}" th:object="${book}" method="post">
+
+    <!-- Book title input -->
+    <label>Title: <input type="text" th:field="*{title}" required /></label><br/><br/>
+
+    <!-- Book author input -->
+    <label>Author: <input type="text" th:field="*{author}" required /></label><br/><br/>
+
+    <!-- Book price input (decimal allowed) -->
+    <label>Price: <input type="number" step="0.01" th:field="*{price}" required /></label><br/><br/>
+
+    <!-- Number of copies available -->
+    <label>Copies: <input type="number" th:field="*{copies}" required /></label><br/><br/>
+
+    <!-- Submit button to save the new book -->
+    <button type="submit">Add Book</button>
+</form>
+
+<br/>
+
+<!-- Link to go back to the book list page -->
+<a th:href="@{/books}">Back to List</a>
+</body>
+</html>
