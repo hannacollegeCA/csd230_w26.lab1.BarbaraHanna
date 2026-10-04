@@ -39,6 +39,9 @@
 
             <!-- Link to delete the selected book -->
             <a th:href="@{/books/delete/{id}(id=${book.id})}">Delete</a>
+
+            <a th:href="@{/cart/add/{id}(id=${book.id})}">Add to Cart</a>
+
         </td>
     </tr>
     </tbody>
@@ -46,5 +49,8 @@
 
 <br/>
 <a th:href="@{/books/add}">Add New Book</a>
+
+<a th:href="@{/cart}">View Cart</a>
+
 </body>
 </html>

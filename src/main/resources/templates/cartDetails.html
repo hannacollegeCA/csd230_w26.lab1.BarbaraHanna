@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Cart</title>
+</head>
+<body>
+
+<h1>Your Cart</h1>
+
+<div th:if="${cart != null}">
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Price</th>
+            <th>Remove</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="book : ${cart.books}">
+            <td th:text="${book.title}"></td>
+            <td th:text="${book.author}"></td>
+            <td th:text="${book.price}"></td>
+            <td>
+                <a th:href="@{/cart/remove/{id}(id=${book.id})}">Remove</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:unless="${cart != null}">
+    <p>No cart found.</p>
+</div>
+
+<br/>
+<a th:href="@{/books}">Back to Books</a>
+
+</body>
+</html>

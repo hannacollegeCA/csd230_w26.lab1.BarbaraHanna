@@ -13,19 +13,27 @@ public class CartEntity {
     // LinkedHashSet for NO duplicate items
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "cart_products",
+            name = "cart_books",
             joinColumns = @JoinColumn(name = "cart_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
+            inverseJoinColumns = @JoinColumn(name = "book_id")
     )
 
-    private Set<ProductEntity> products = new LinkedHashSet<>();
-    public void addProduct(ProductEntity product) {
-        this.products.add(product);
-        product.getCarts().add(this); // Maintain the link on both sides
+    private Set<BookEntity> books = new LinkedHashSet<>();
+
+    public Long getId() {
+        return id;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Set<ProductEntity> getProducts() { return products; }
-    public void setProducts(Set<ProductEntity> products) { this.products = products; }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Set<BookEntity> getBooks() {
+        return books;
+    }
+
+    public void setBooks(Set<BookEntity> books) {
+        this.books = books;
+
+    }
 }
