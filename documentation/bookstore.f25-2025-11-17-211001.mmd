@@ -1,88 +1,61 @@
 classDiagram
 
-    Product <|--Ticket
-    Product <|--Publication
-    Publication <|-- Book
-    Publication <|-- Magazine
-    Magazine <|-- DiscMag
-    SaleableItem <|.. Product
-    Serializable <|.. Product
-    Cart "0..*" --> "0..*" Product : contains
+%% Interfaces
+Serializable <|.. ProductEntity
+SaleableItem <|.. ProductEntity
 
+%% Product hierarchy
+ProductEntity <|-- PublicationEntity
+ProductEntity <|-- TicketEntity
+PublicationEntity <|-- BookEntity
+PublicationEntity <|-- MagazineEntity
+MagazineEntity <|-- DiscMagEntity
 
-    class Product{
-        -Long id
-        -String productId
-        -double price
-        -int copies
-    }
+%% Cart relationship
+CartEntity "1" --> "0..*" ProductEntity : contains
 
-    class Serializable{
-        <<interface>>
-    }
+%% Order relationship
+OrderEntity "1" --> "0..*" ProductEntity : purchased_items
 
-    class Cart{
-        -Long id
-        -List items
-        +addItem(Product item)
-        +getItems()
-        +setItems(List items)
-    }
-
-
-    class Publication{
-        <<Abstract>>
-        -String title
-        -double price
-        -int copies
-        +getPrice()
-
-        +Publication()
-        +Publication(String title, double price, int copies)
-        +toString()
-        +equals()
-        +hashCode()
-
-    }
-    class Book{
-        -String isbn
-        -String author
-
-        +Book()
-        +Book(String author)
-        +Book(String author, String title, double price, int copies)
-        +toString()
-        +equals()
-        +hashCode()
-
-    }
-    class Magazine{
-        -int orderQty
-        -LocalDateTime currentIssue
-
-        +Magazine()
-        +Magazine(int orderQty, Date currentIssue, String title, double price, int copies)
-
-        +sellItem()
-    }
-    class DiscMag{
-        -boolean hasDisc
-        +sellItem()
-
-        +DiscMag()
-        +DiscMag(boolean, hasDisc, int orderQty, Date currentIssue, String title, double price, int copies)
-
-    }
-
-    class SaleableItem {
-        <<interface>>
-        +sellItem()
-        +getPrice()
-
-    }
-
-    class Ticket {
-    -String description
+class ProductEntity {
+    -Long id
+    -String title
     -double price
+}
+
+class PublicationEntity {
+    -String author
+    -int copies
+}
+
+class BookEntity {
+    -String isbn
+}
+
+class MagazineEntity {
+    -int orderQty
+    -LocalDateTime currentIssue
+}
+
+class DiscMagEntity {
+    -boolean hasDisc
+}
+
+class TicketEntity {
+    -String description
     -String type
-    }
+}
+
+class CartEntity {
+    -Long id
+    -Set<ProductEntity> products
+    +addProduct(ProductEntity)
+    +removeProduct(ProductEntity)
+}
+
+class OrderEntity {
+    -Long id
+    -double totalAmount
+    -LocalDateTime orderDate
+    -Set<ProductEntity> products
+}

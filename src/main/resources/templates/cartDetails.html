@@ -12,19 +12,17 @@
         <thead>
         <tr>
             <th>Title</th>
-            <th>Author</th>
             <th>Price</th>
             <th>Remove</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr th:each="book : ${cart.books}">
-            <td th:text="${book.title}"></td>
-            <td th:text="${book.author}"></td>
-            <td th:text="${book.price}"></td>
+        <tr th:each="product : ${cart.products}">
+            <td th:text="${product.title}"></td>
+            <td th:text="${product.price}"></td>
             <td>
-                <a th:href="@{/cart/remove/{id}(id=${book.id})}">Remove</a>
+                <a th:href="@{/cart/remove/{id}(id=${product.id})}">Remove</a>
             </td>
         </tr>
         </tbody>
@@ -37,6 +35,11 @@
 
 <br/>
 <a th:href="@{/books}">Back to Books</a>
+
+<form th:action="@{/cart/checkout}" method="post">
+    <button type="submit">Checkout</button>
+</form>
+
 
 </body>
 </html>

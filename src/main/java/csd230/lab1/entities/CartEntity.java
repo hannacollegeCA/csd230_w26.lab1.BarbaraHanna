@@ -1,6 +1,6 @@
 package csd230.lab1.entities;
 import jakarta.persistence.*;
-        import java.util.LinkedHashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -13,27 +13,34 @@ public class CartEntity {
     // LinkedHashSet for NO duplicate items
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "cart_books",
+            name = "cart_products",
             joinColumns = @JoinColumn(name = "cart_id"),
-            inverseJoinColumns = @JoinColumn(name = "book_id")
+            inverseJoinColumns = @JoinColumn(name = "product_id")
     )
+    private Set<ProductEntity> products = new LinkedHashSet<>();
 
-    private Set<BookEntity> books = new LinkedHashSet<>();
+
+    public CartEntity() {}
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Set<ProductEntity> getProducts() {
+        return products;
     }
 
-    public Set<BookEntity> getBooks() {
-        return books;
+    public void setProducts(Set<ProductEntity> products) {
+        this.products = products;
     }
 
-    public void setBooks(Set<BookEntity> books) {
-        this.books = books;
+    public void addProduct(ProductEntity product) {
+        this.products.add(product);
+        product.getCarts().add(this);
+    }
 
+    public void removeProduct(ProductEntity product) {
+        this.products.remove(product);
+        product.getCarts().remove(this);
     }
 }

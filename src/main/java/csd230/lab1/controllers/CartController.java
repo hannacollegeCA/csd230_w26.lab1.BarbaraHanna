@@ -1,12 +1,11 @@
 package csd230.lab1.controllers;
 
-import csd230.lab1.entities.BookEntity;
-import csd230.lab1.entities.CartEntity;
-import csd230.lab1.repositories.BookEntityRepository;
-import csd230.lab1.repositories.CartEntityRepository;
+import csd230.lab1.entities.*;
+import csd230.lab1.repositories.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/cart")
@@ -14,10 +13,17 @@ public class CartController {
 
     private final CartEntityRepository cartRepository;
     private final BookEntityRepository bookRepository;
+    private final ProductEntityRepository productRepository;
+    private final OrderEntityRepository orderRepository;
 
-    public CartController(CartEntityRepository cartRepository, BookEntityRepository bookRepository) {
+    public CartController(CartEntityRepository cartRepository,
+                          BookEntityRepository bookRepository,
+                          ProductEntityRepository productRepository,
+                          OrderEntityRepository orderRepository) {
         this.cartRepository = cartRepository;
         this.bookRepository = bookRepository;
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping
@@ -33,7 +39,7 @@ public class CartController {
         BookEntity book = bookRepository.findById(bookId).orElse(null);
 
         if (cart != null && book != null) {
-            cart.getBooks().add(book);
+            cart.addProduct(book);
             cartRepository.save(cart);
         }
 
@@ -46,10 +52,51 @@ public class CartController {
         BookEntity book = bookRepository.findById(bookId).orElse(null);
 
         if (cart != null && book != null) {
-            cart.getBooks().remove(book);
+            cart.removeProduct(book);
             cartRepository.save(cart);
         }
 
         return "redirect:/cart";
+    }
+
+    @PostMapping("/checkout")
+    public String checkout(Model model) {
+
+        CartEntity cart = cartRepository.findById(1L).orElse(null);
+
+        if (cart == null || cart.getProducts().isEmpty()) {
+            return "redirect:/cart";
+        }
+
+        OrderEntity order = new OrderEntity();
+        order.setOrderDate(LocalDateTime.now());
+
+        double total = 0.0;
+
+        for (ProductEntity product : cart.getProducts()) {
+
+            total += product.getPrice();
+
+            // Decrement stock only for publications
+            if (product instanceof PublicationEntity pub) {
+                pub.setCopies(pub.getCopies() - 1);
+                productRepository.save(pub);
+            }
+
+            order.getProducts().add(product);
+        }
+
+        order.setTotalAmount(total);
+
+        // Clear cart
+        cart.getProducts().clear();
+
+        // Save everything
+        orderRepository.save(order);
+        cartRepository.save(cart);
+
+        model.addAttribute("order", order);
+
+        return "orderDetails";
     }
 }

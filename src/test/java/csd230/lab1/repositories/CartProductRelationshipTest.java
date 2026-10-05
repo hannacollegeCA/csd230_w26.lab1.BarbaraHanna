@@ -42,8 +42,10 @@ class CartProductRelationshipTest {
                 "Tech Magazine",
                 12.99,
                 20,
-                50,
-                LocalDateTime.now()
+                "Tech Author",
+                40,
+                "TechPress",
+                101
         );
 
         // Add products to cart
