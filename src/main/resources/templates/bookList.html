@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Book List</title>
 </head>
@@ -10,6 +11,16 @@
     Table showing all books from the database.
     The controller sends a list called "books" to this page.
 -->
+
+<!-- Show logged-in username -->
+<p>Logged in as: <span sec:authentication="name"></span></p>
+
+<!-- Logout button -->
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Sign Out</button>
+</form>
+
+<br/>
 
 <table border="1">
     <thead>
@@ -34,13 +45,16 @@
             <!-- Link to view details of the selected book -->
             <a th:href="@{/books/{id}(id=${book.id})}">Details</a>
 
-            <!-- Link to edit the selected book -->
+            <!-- Only ADMIN can edit/delete -->
+            <span sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/books/edit/{id}(id=${book.id})}">Edit</a>
-
-            <!-- Link to delete the selected book -->
             <a th:href="@{/books/delete/{id}(id=${book.id})}">Delete</a>
+            </span>
 
+            <!-- Only USER can add to cart -->
+            <span sec:authorize="hasRole('USER')">
             <a th:href="@{/cart/add/{id}(id=${book.id})}">Add to Cart</a>
+            </span>
 
         </td>
     </tr>
@@ -48,9 +62,15 @@
 </table>
 
 <br/>
+<!-- Only ADMIN can add new books -->
+<span sec:authorize="hasRole('ADMIN')">
 <a th:href="@{/books/add}">Add New Book</a>
+</span>
 
+<!-- Only USER can view cart -->
+<span sec:authorize="hasRole('USER')">
 <a th:href="@{/cart}">View Cart</a>
+    </span>
 
 </body>
 </html>
