@@ -5,6 +5,7 @@ import csd230.lab1.repositories.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Controller
@@ -15,30 +16,65 @@ public class CartController {
     private final BookEntityRepository bookRepository;
     private final ProductEntityRepository productRepository;
     private final OrderEntityRepository orderRepository;
+    private final UserEntityRepository userRepository;
 
     public CartController(CartEntityRepository cartRepository,
                           BookEntityRepository bookRepository,
                           ProductEntityRepository productRepository,
-                          OrderEntityRepository orderRepository) {
+                          OrderEntityRepository orderRepository,
+                          UserEntityRepository userRepository) {
         this.cartRepository = cartRepository;
         this.bookRepository = bookRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
+    /**
+     * Returns the cart belonging to the logged-in user.
+     * If the user does not have a cart yet, one is created automatically.
+     */
+    private CartEntity getCartForCurrentUser(Principal principal) {
+
+        // 1. Get username from Spring Security
+        String username = principal.getName();
+
+        // 2. Find the UserEntity in the database
+        UserEntity user = userRepository.findByUsername(username);
+
+        // 3. Try to find an existing cart for this user
+        CartEntity cart = cartRepository.findByUser(user);
+
+        // 4. If no cart exists, create one and link it to the user
+        if (cart == null) {
+            cart = new CartEntity();
+            cart.setUser(user);
+            cartRepository.save(cart);
+        }
+
+        return cart;
+    }
+
+
+    /**
+     * Shows the cart for the logged-in user.
+     */
     @GetMapping
-    public String viewCart(Model model) {
-        CartEntity cart = cartRepository.findById(1L).orElse(null);
+    public String viewCart(Model model, Principal principal) {
+        CartEntity cart = getCartForCurrentUser(principal);
         model.addAttribute("cart", cart);
         return "cartDetails";
     }
 
+    /**
+     * Adds a book to the user's cart.
+     */
     @GetMapping("/add/{bookId}")
-    public String addToCart(@PathVariable Long bookId) {
-        CartEntity cart = cartRepository.findById(1L).orElse(null);
+    public String addToCart(@PathVariable Long bookId, Principal principal) {
+        CartEntity cart = getCartForCurrentUser(principal);
         BookEntity book = bookRepository.findById(bookId).orElse(null);
 
-        if (cart != null && book != null) {
+        if (book != null) {
             cart.addProduct(book);
             cartRepository.save(cart);
         }
@@ -46,12 +82,16 @@ public class CartController {
         return "redirect:/cart";
     }
 
+
+    /**
+     * Removes a book from the user's cart.
+     */
     @GetMapping("/remove/{bookId}")
-    public String removeFromCart(@PathVariable Long bookId) {
-        CartEntity cart = cartRepository.findById(1L).orElse(null);
+    public String removeFromCart(@PathVariable Long bookId, Principal principal) {
+        CartEntity cart = getCartForCurrentUser(principal);
         BookEntity book = bookRepository.findById(bookId).orElse(null);
 
-        if (cart != null && book != null) {
+        if (book != null) {
             cart.removeProduct(book);
             cartRepository.save(cart);
         }
@@ -60,9 +100,9 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public String checkout(Model model) {
+    public String checkout(Model model, Principal principal) {
 
-        CartEntity cart = cartRepository.findById(1L).orElse(null);
+        CartEntity cart = getCartForCurrentUser(principal);
 
         if (cart == null || cart.getProducts().isEmpty()) {
             return "redirect:/cart";

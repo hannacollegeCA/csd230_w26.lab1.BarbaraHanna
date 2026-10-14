@@ -20,6 +20,13 @@ public class CartEntity {
     private Set<ProductEntity> products = new LinkedHashSet<>();
 
 
+
+    // Each cart belongs to exactly one user
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
+
     public CartEntity() {}
 
     public Long getId() {
@@ -42,5 +49,14 @@ public class CartEntity {
     public void removeProduct(ProductEntity product) {
         this.products.remove(product);
         product.getCarts().remove(this);
+    }
+
+    // Getter and Setter for the linked User
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 }
