@@ -67,8 +67,16 @@ public class BookController {
 
     @GetMapping("/delete/{id}")
     public String deleteBook(@PathVariable Long id) {
-        // Delete the book by its ID
-        bookRepository.deleteById(id);
+        BookEntity book = bookRepository.findById(id).orElse(null);
+
+        if (book != null) {
+            // Remove the book from all carts before deleting
+            book.getCarts().forEach(cart -> cart.getProducts().remove(book));
+
+            // Now delete the book safely
+            bookRepository.delete(book);
+        }
+
         return "redirect:/books"; // Refresh the list after deletion
     }
 }
