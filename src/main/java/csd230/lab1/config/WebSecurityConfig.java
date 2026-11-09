@@ -25,7 +25,7 @@ public class WebSecurityConfig {
 
         http
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/h2-console/**", "/login", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/h2-console/**", "/login", "/css/**", "/js/**", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**","/swagger-ui.html").permitAll()
                         .requestMatchers("/books/add", "/books/edit/**", "/books/delete/**").hasRole("ADMIN")
                         // Allow public access to registration page
                         .requestMatchers("/h2-console/**", "/login", "/register", "/css/**", "/js/**").permitAll()
