@@ -40,6 +40,8 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+
+
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
                                 "/h2-console/**",
@@ -68,16 +70,18 @@ public class WebSecurityConfig {
                                 "/books/delete/**"
                         ).hasRole("ADMIN")
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/rest/**"
-                        ).hasAnyRole("USER","ADMIN")
+                        //.requestMatchers(
+                                //HttpMethod.GET,
+                              //  "/api/rest/**"
+                        //).hasAnyRole("USER","ADMIN")
 
-                        .requestMatchers("/api/rest/**")
-                        .hasRole("ADMIN")
+                        .requestMatchers("/api/rest/**").permitAll()
+                        // .requestMatchers("/api/rest/**")
+                       // .hasRole("ADMIN")
 
                         // Allow public access to registration page
                         .anyRequest().authenticated()
+
                 )
 
         .exceptionHandling(exceptions -> exceptions
