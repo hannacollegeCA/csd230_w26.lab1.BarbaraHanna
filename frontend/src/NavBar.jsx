@@ -7,6 +7,13 @@ export default function NavBar() {
             <Link to="/inventory">Books</Link>
             <Link to="/add">Add Book</Link>
             <Link to="/magazines">Magazines</Link>
+            <Link to="/discmags">
+                Disc Magazines
+            </Link>
+
+            <Link to="/add-discmag">
+                Add Disc Magazine
+            </Link>
         </nav>
     );
 }

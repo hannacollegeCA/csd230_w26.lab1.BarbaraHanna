@@ -6,14 +6,77 @@ import { Routes, Route, useNavigate } from 'react-router';
 import NavBar from './NavBar.jsx';
 import Home from './Home.jsx';
 import MagazineList from './MagazineList.jsx';
+import DiscMagForm from "./DiscMagForm";
+import DiscMagList from "./DiscMagList";
 
 
 
 export default function App() {
     const navigate = useNavigate();
+    const [discMags, setDiscMags] = useState([]);
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        fetch("/api/rest/discmags")
+            .then((response) => response.json())
+            .then((data) => setDiscMags(data));
+    }, []);
+
+    const addDiscMag = (discMag) => {
+        setDiscMags(previous => [...previous, discMag]);
+
+        navigate("/discmags");
+    };
+
+    async function handleUpdateDiscMag(id, data) {
+        const response = await fetch(`/api/rest/discmags/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Update failed (${response.status})`);
+        }
+
+        const savedDiscMag = await response.json();
+
+        setDiscMags(previous =>
+            previous.map(dm =>
+                dm.id === id ? savedDiscMag : dm
+            )
+        );
+    }
+
+    async function handleDeleteDiscMag(id) {
+
+        if (!window.confirm("Delete this disc magazine?")) {
+            return;
+        }
+
+        const response = await fetch(
+            `/api/rest/discmags/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Delete failed (${response.status})`);
+        }
+
+        setDiscMags(previous =>
+            previous.filter(dm => dm.id !== id)
+        );
+    }
+
+
+
+
     useEffect(() => {
         let active = true;
         fetch('/api/rest/books')
@@ -123,6 +186,22 @@ export default function App() {
                 <Route
                     path="/magazines"
                     element={<MagazineList />}
+                />
+
+                <Route
+                    path="/discmags"
+                    element={
+                        <DiscMagList
+                            discMags={discMags}
+                            onDelete={handleDeleteDiscMag}
+                            onUpdate={handleUpdateDiscMag}
+                        />
+                    }
+                />
+
+                <Route
+                    path="/add-discmag"
+                    element={<DiscMagForm onAdd={addDiscMag} />}
                 />
 
                 <Route
