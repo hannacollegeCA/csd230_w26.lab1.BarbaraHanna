@@ -3,7 +3,7 @@ import useAuth from './useAuth.js';
 
 export default function NavBar({ cartCount }) {
 
-    const { logout } = useAuth();
+    const { logout, isAdmin } = useAuth();
     const navigate = useNavigate();
 
     return (
@@ -17,9 +17,11 @@ export default function NavBar({ cartCount }) {
                 Books
             </Link>
 
-            <Link to="/add">
-                Add Book
-            </Link>
+            {isAdmin && (
+                <Link to="/add">
+                    Add Book
+                </Link>
+            )}
 
             <Link to="/magazines">
                 Magazines

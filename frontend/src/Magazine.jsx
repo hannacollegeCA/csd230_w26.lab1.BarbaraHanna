@@ -9,7 +9,8 @@
                                          onUpdate,
                                          onDelete,
                                          onAddToCart,
-                                         cartPending
+                                         cartPending,
+                                         canManage
     }) {
         const [isEditing, setIsEditing] = useState(false);
         const [draft, setDraft] = useState({ title, price, copies, orderQty, currentIssue });
@@ -53,10 +54,12 @@
                 Add to Cart
             </button>
 
-            <button onClick={beginEdit}>Edit</button>
+            {canManage && (
+            <button onClick={beginEdit}>Edit</button> )}
+            {canManage && (
             <button onClick={() => onDelete(id)}>
                 Delete
-            </button>
+            </button> )}
         </article>;
     }
 

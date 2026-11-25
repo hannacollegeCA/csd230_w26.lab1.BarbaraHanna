@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import {Navigate, useNavigate, useSearchParams} from 'react-router';
 import api from './api.js';
 import useAuth from './useAuth.js';
 
@@ -7,6 +7,8 @@ export default function Login() {
 
     const { token, login } = useAuth();
     const navigate = useNavigate();
+
+    const [search] = useSearchParams();
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -64,6 +66,14 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
 
             <h2>Sign in</h2>
+
+            {search.get('reauth') === 'true' && (
+                <p role="status">
+                    Your session has expired or is invalid.
+                    Please sign in again.
+                </p>
+            )}
+
 
             <label>
                 Username

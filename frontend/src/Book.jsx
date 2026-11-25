@@ -4,7 +4,8 @@ export default function Book({ book,
                                  onDelete,
                                  onUpdate,
                                  onAddToCart,
-                                 cartPending
+                                 cartPending,
+                                 canManage
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [draft, setDraft] = useState(book);
@@ -129,13 +130,18 @@ export default function Book({ book,
 
             </button>
 
+
+            {canManage && (
             <button onClick={beginEdit}>
                 Edit
             </button>
+            )}
 
+            {canManage && (
             <button onClick={() => onDelete(book.id)}>
                 Delete
             </button>
+            )}
         </article>
     );
 }

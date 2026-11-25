@@ -6,7 +6,9 @@ export default function BookList({ books,
                                      onDelete,
                                      onUpdate,
                                      onAddToCart,
-                                     cartPending }) {
+                                     cartPending,
+                                     canManage
+}) {
     if (loading) return <p>Loading books...</p>;
     return <section aria-label="Book inventory">
         <h2>Books</h2>
@@ -18,6 +20,7 @@ export default function BookList({ books,
                                  onUpdate={onUpdate}
                                  onAddToCart={onAddToCart}
                                  cartPending={cartPending}
+                                 canManage={canManage}
         />)}
     </section>;
 }

@@ -9,7 +9,7 @@ export default function MagazineList({
                                          cartPending
                                      }) {
 
-    const { token } = useAuth();
+    const { token, isAdmin } = useAuth();
 
     const isCurrent = () =>
         localStorage.getItem('token') === token;
@@ -128,6 +128,7 @@ export default function MagazineList({
         <section>
 
             <h1>Magazines</h1>
+            {isAdmin && (
 
             <MagazineForm
                 onMagazineAdded={saved => {
@@ -142,6 +143,7 @@ export default function MagazineList({
                     }
                 }}
             />
+            )}
 
             {loading && (
                 <p>
@@ -174,6 +176,7 @@ export default function MagazineList({
                         onDelete={handleDeleteMagazine}
                         onAddToCart={onAddToCart}
                         cartPending={cartPending}
+                        canManage={isAdmin}
                     />
 
                 ))}

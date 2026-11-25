@@ -1,11 +1,31 @@
-import { useState } from 'react';
 import { AuthContext } from './AuthContext.js';
+import { hasRole } from './tokenRoles.js';
+import { useEffect, useState } from 'react';
 
 export default function AuthProvider({ children }) {
 
     const [token, setToken] = useState(
         () => localStorage.getItem('token')
     );
+
+    useEffect(() => {
+
+        function invalidSession() {
+            setToken(null);
+        }
+
+        window.addEventListener(
+            'auth:invalid',
+            invalidSession
+        );
+
+        return () =>
+            window.removeEventListener(
+                'auth:invalid',
+                invalidSession
+            );
+
+    }, []);
 
     function login(nextToken) {
 
@@ -36,7 +56,11 @@ export default function AuthProvider({ children }) {
             value={{
                 token,
                 login,
-                logout
+                logout,
+                isAdmin: hasRole(
+                    token,
+                    'ROLE_ADMIN'
+                )
             }}
         >
             {children}
