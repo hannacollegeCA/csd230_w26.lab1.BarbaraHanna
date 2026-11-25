@@ -75,9 +75,43 @@ public class WebSecurityConfig {
                               //  "/api/rest/**"
                         //).hasAnyRole("USER","ADMIN")
 
-                        .requestMatchers("/api/rest/**").permitAll()
+                        // .requestMatchers("/api/rest/**").permitAll()
                         // .requestMatchers("/api/rest/**")
                        // .hasRole("ADMIN")
+
+
+                                // Current-user cart endpoints
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/rest/carts/mine"
+                                ).hasAnyRole("USER", "ADMIN")
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/rest/carts/mine/products/*"
+                                ).hasAnyRole("USER", "ADMIN")
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/rest/carts/mine/products/*"
+                                ).hasAnyRole("USER", "ADMIN")
+
+                                // Administrative cart endpoints
+                                .requestMatchers(
+                                        "/api/rest/carts",
+                                        "/api/rest/carts/**"
+                                ).hasRole("ADMIN")
+
+                                // Inventory reads
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/rest/**"
+                                ).hasAnyRole("USER", "ADMIN")
+
+                                // Inventory writes
+                                .requestMatchers(
+                                        "/api/rest/**"
+                                ).hasRole("ADMIN")
 
                         // Allow public access to registration page
                         .anyRequest().authenticated()

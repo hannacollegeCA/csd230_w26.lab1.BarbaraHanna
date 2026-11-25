@@ -1,68 +1,185 @@
 import { useState, useEffect } from 'react';
+import useAuth from './useAuth.js';
 import MagazineForm from './MagazineForm.jsx';
 import Magazine from './Magazine.jsx';
 import api from './api.js';
 
-export default function MagazineList() {
+export default function MagazineList({
+                                         onAddToCart,
+                                         cartPending
+                                     }) {
+
+    const { token } = useAuth();
+
+    const isCurrent = () =>
+        localStorage.getItem('token') === token;
+
     const [magazines, setMagazines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
     useEffect(() => {
+
         let active = true;
+
         api.get('/magazines')
-            .then(res => {
-                if (active) setMagazines(res.data);
+            .then(response => {
+
+                if (
+                    active &&
+                    localStorage.getItem('token') === token
+                ) {
+                    setMagazines(response.data);
+                }
+
             })
             .catch(err => {
-                if (active) setError(err.message); })
+
+                if (
+                    active &&
+                    localStorage.getItem('token') === token
+                ) {
+                    setError(err.message);
+                }
+
+            })
             .finally(() => {
-                if (active) setLoading(false);
+
+                if (
+                    active &&
+                    localStorage.getItem('token') === token
+                ) {
+                    setLoading(false);
+                }
+
             });
+
         return () => {
-            active = false; };
-    }, []);
+            active = false;
+        };
+
+    }, [token]);
 
     async function handleDeleteMagazine(id) {
-        if (!window.confirm('Delete this magazine?')) return;
+
+        if (
+            !window.confirm(
+                'Delete this magazine?'
+            )
+        ) {
+            return;
+        }
 
         setError('');
 
         try {
-            await api.delete(`/magazines/${id}`);
+
+            await api.delete(
+                `/magazines/${id}`
+            );
+
+            if (!isCurrent()) {
+                return;
+            }
 
             setMagazines(previous =>
                 previous.filter(
-                    magazine => magazine.id !== id
+                    magazine =>
+                        magazine.id !== id
                 )
             );
 
         } catch (err) {
-            setError(err.message);
+
+            if (isCurrent()) {
+                setError(err.message);
+            }
+
         }
     }
 
-    async function handleUpdateMagazine(id, data) {
-        const res = await api.put(
-            `/magazines/${id}`,
-            data
-        );
+    async function handleUpdateMagazine(
+        id,
+        data
+    ) {
+
+        const res =
+            await api.put(
+                `/magazines/${id}`,
+                data
+            );
+
+        if (!isCurrent()) {
+            return;
+        }
 
         const saved = res.data;
 
         setMagazines(previous =>
             previous.map(magazine =>
-                magazine.id === id ? saved : magazine
+                magazine.id === id
+                    ? saved
+                    : magazine
             )
         );
     }
-    return <section>
-        <h1>Magazines</h1>
-        <MagazineForm onMagazineAdded={saved => setMagazines(previous => [...previous, saved])} />
-        {loading && <p>Loading magazines...</p>}
-        {error && <p role="alert">{error}</p>}
-        {!loading && !error && magazines.length === 0 && <p>No magazines yet.</p>}
-        <div className="magazine-list">
-            {magazines.map(magazine => <Magazine key={magazine.id} {...magazine} onUpdate={handleUpdateMagazine} onDelete={handleDeleteMagazine} />)}
-        </div>
-    </section>;
+
+    return (
+        <section>
+
+            <h1>Magazines</h1>
+
+            <MagazineForm
+                onMagazineAdded={saved => {
+
+                    if (isCurrent()) {
+
+                        setMagazines(previous => [
+                            ...previous,
+                            saved
+                        ]);
+
+                    }
+                }}
+            />
+
+            {loading && (
+                <p>
+                    Loading magazines...
+                </p>
+            )}
+
+            {error && (
+                <p role="alert">
+                    {error}
+                </p>
+            )}
+
+            {!loading &&
+                !error &&
+                magazines.length === 0 && (
+                    <p>
+                        No magazines yet.
+                    </p>
+                )}
+
+            <div className="magazine-list">
+
+                {magazines.map(magazine => (
+
+                    <Magazine
+                        key={magazine.id}
+                        {...magazine}
+                        onUpdate={handleUpdateMagazine}
+                        onDelete={handleDeleteMagazine}
+                        onAddToCart={onAddToCart}
+                        cartPending={cartPending}
+                    />
+
+                ))}
+
+            </div>
+
+        </section>
+    );
 }

@@ -1,111 +1,249 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router';
+
 import AddBookForm from './AddBookForm.jsx';
 import BookList from './BookList.jsx';
-import './App.css';
-import { Routes, Route, useNavigate } from 'react-router';
+import MagazineList from './MagazineList.jsx';
+import DiscMagForm from './DiscMagForm.jsx';
+import DiscMagList from './DiscMagList.jsx';
 import NavBar from './NavBar.jsx';
 import Home from './Home.jsx';
-import MagazineList from './MagazineList.jsx';
-import DiscMagForm from "./DiscMagForm";
-import DiscMagList from "./DiscMagList";
+import './App.css';
+import DisplayCart from './DisplayCart.jsx';
+
 import api from './api.js';
 
+import AuthProvider from './AuthProvider.jsx';
+import useAuth from './useAuth.js';
+import Login from './Login.jsx';
+import ProtectedRoute from './ProtectedRoute.jsx';
 
 export default function App() {
+    return (
+        <AuthProvider>
+            <main className="app-container">
+                <h1>My Bookstore Frontend</h1>
+
+                <Routes>
+                    <Route
+                        path="/login"
+                        element={<Login />}
+                    />
+
+                    <Route element={<ProtectedRoute />}>
+                        <Route
+                            path="*"
+                            element={<SignedInBookApp />}
+                        />
+                    </Route>
+                </Routes>
+            </main>
+        </AuthProvider>
+    );
+}
+
+function SignedInBookApp() {
+    const { token } = useAuth();
+
+    return (
+        <BookApp key={token} />
+    );
+}
+
+function BookApp() {
+
     const navigate = useNavigate();
+
     const [discMags, setDiscMags] = useState([]);
+
+    const { token } = useAuth();
+
+    const [cart, setCart] = useState(null);
+    const [cartLoading, setCartLoading] = useState(true);
+    const [cartError, setCartError] = useState('');
+    const [cartPending, setCartPending] = useState(false);
+
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // DiscMags
     useEffect(() => {
-        api.get("/discmags")
-            .then((response) => setDiscMags(response.data))
-            .catch(err => console.error(err));
+        api.get('/discmags')
+            .then(response => {
+                setDiscMags(response.data);
+            })
+            .catch(console.error);
     }, []);
 
+
+
     const addDiscMag = (discMag) => {
-        setDiscMags(previous => [...previous, discMag]);
-        navigate("/discmags");
+        setDiscMags(previous => [
+            ...previous,
+            discMag
+        ]);
+
+        navigate('/discmags');
     };
 
     async function handleUpdateDiscMag(id, data) {
-        const response = await api.put(
-            `/discmags/${id}`,
-            data
-        );
 
+        const response =
+            await api.put(
+                `/discmags/${id}`,
+                data
+            );
 
-        const savedDiscMag = response.data;
+        const savedDiscMag =
+            response.data;
 
         setDiscMags(previous =>
             previous.map(dm =>
-                dm.id === id ? savedDiscMag : dm
+                dm.id === id
+                    ? savedDiscMag
+                    : dm
             )
         );
     }
 
     async function handleDeleteDiscMag(id) {
 
-        if (!window.confirm("Delete this disc magazine?")) {
+        if (
+            !window.confirm(
+                'Delete this disc magazine?'
+            )
+        ) {
             return;
         }
 
-        await api.delete(`/discmags/${id}`);
+        await api.delete(
+            `/discmags/${id}`
+        );
 
         setDiscMags(previous =>
-            previous.filter(dm => dm.id !== id)
+            previous.filter(
+                dm => dm.id !== id
+            )
         );
     }
 
     useEffect(() => {
+
         let active = true;
 
         api.get('/books')
             .then(response => {
-                if (active) setBooks(response.data);
+                if (active) {
+                    setBooks(
+                        response.data
+                    );
+                }
             })
             .catch(err => {
-                if (active) setError(err.message);
+                if (active) {
+                    setError(
+                        err.message
+                    );
+                }
             })
             .finally(() => {
-                if (active) setLoading(false);
+                if (active) {
+                    setLoading(false);
+                }
             });
 
         return () => {
             active = false;
         };
+
     }, []);
 
+    useEffect(() => {
 
+        let active = true;
+
+        api.get('/carts/mine')
+            .then(response => {
+                if (active) {
+                    setCart(
+                        response.status === 204
+                            ? null
+                            : response.data
+                    );
+                }
+            })
+            .catch(err => {
+                if (active) {
+                    setCartError(err.message);
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setCartLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+
+    }, [token]);
 
     function handleBookAdded(savedBook) {
-        setBooks(previous => [...previous, savedBook]);
+
+        setBooks(previous => [
+            ...previous,
+            savedBook
+        ]);
+
         navigate('/inventory');
     }
 
-    async function handleUpdateBook(id, data) {
-        const response = await api.put(`/books/${id}`, data);
+    async function handleUpdateBook(
+        id,
+        data
+    ) {
 
-        const savedBook = response.data;
+        const response =
+            await api.put(
+                `/books/${id}`,
+                data
+            );
+
+        const savedBook =
+            response.data;
 
         setBooks(previous =>
             previous.map(book =>
-                book.id === id ? savedBook : book
+                book.id === id
+                    ? savedBook
+                    : book
             )
         );
     }
 
     async function handleDeleteBook(id) {
-        if (!window.confirm('Delete this book?')) return;
+
+        if (
+            !window.confirm(
+                'Delete this book?'
+            )
+        ) {
+            return;
+        }
 
         setError('');
 
-        try {await api.delete(`/books/${id}`);
+        try {
+
+            await api.delete(
+                `/books/${id}`
+            );
 
             setBooks(previous =>
-                previous.filter(book => book.id !== id)
+                previous.filter(
+                    book => book.id !== id
+                )
             );
 
         } catch (err) {
@@ -113,16 +251,67 @@ export default function App() {
         }
     }
 
-    return (
-        <main className="app-container">
-            <h1>My Bookstore Frontend</h1>
+    async function changeCart(
+        productId,
+        remove = false
+    ) {
 
-            <NavBar/>
+        if (
+            cartLoading ||
+            cartPending
+        ) {
+            return;
+        }
+
+        setCartError('');
+        setCartPending(true);
+
+        try {
+
+            const path =
+                `/carts/mine/products/${productId}`;
+
+            const response =
+                remove
+                    ? await api.delete(path)
+                    : await api.post(path);
+
+            setCart(
+                response.status === 204
+                    ? null
+                    : response.data
+            );
+
+        } catch (err) {
+
+            setCartError(
+                err.message
+            );
+
+        } finally {
+
+            setCartPending(false);
+
+        }
+    }
+
+    return (
+        <>
+            <NavBar
+                cartCount={cart?.products?.length ?? 0}
+            />
+
+            {cartError && (
+                <p role="status">
+                    Cart: {cartError}
+                </p>
+            )}
 
             <Routes>
+
                 <Route
                     path="/"
-                    element={<Home/>}
+                    element={<Home />}
                 />
 
                 <Route
@@ -134,6 +323,8 @@ export default function App() {
                             error={error}
                             onDelete={handleDeleteBook}
                             onUpdate={handleUpdateBook}
+                            onAddToCart={changeCart}
+                            cartPending={cartLoading || cartPending}
                         />
                     }
                 />
@@ -149,7 +340,9 @@ export default function App() {
 
                 <Route
                     path="/magazines"
-                    element={<MagazineList />}
+                    element={<MagazineList
+                        onAddToCart={changeCart}
+                        cartPending={cartLoading || cartPending}/>}
                 />
 
                 <Route
@@ -165,16 +358,38 @@ export default function App() {
 
                 <Route
                     path="/add-discmag"
-                    element={<DiscMagForm onAdd={addDiscMag} />}
+                    element={
+                        <DiscMagForm
+                            onAdd={addDiscMag}
+                        />
+                    }
+                />
+
+                <Route
+                    path="/cart"
+                    element={
+                        <DisplayCart
+                            cart={cart}
+                            loading={cartLoading}
+                            error={cartError}
+                            pending={cartPending}
+                            onRemove={(id) =>
+                                changeCart(id, true)
+                            }
+                        />
+                    }
                 />
 
                 <Route
                     path="*"
-                    element={<h2>Page not found</h2>}
+                    element={
+                        <h2>
+                            Page not found
+                        </h2>
+                    }
                 />
 
             </Routes>
-        </main>
+        </>
     );
-
 }

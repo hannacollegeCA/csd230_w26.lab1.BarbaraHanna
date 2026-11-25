@@ -1,6 +1,11 @@
 import { useState } from 'react';
 
-export default function Book({ book, onDelete, onUpdate }) {
+export default function Book({ book,
+                                 onDelete,
+                                 onUpdate,
+                                 onAddToCart,
+                                 cartPending
+}) {
     const [isEditing, setIsEditing] = useState(false);
     const [draft, setDraft] = useState(book);
     const [error, setError] = useState('');
@@ -115,6 +120,14 @@ export default function Book({ book, onDelete, onUpdate }) {
                 {Number(book.price).toFixed(2)}
                 {' '}| Copies: {book.copies}
             </p>
+
+            <button
+                disabled={cartPending}
+                onClick={() => onAddToCart(book.id)}
+            >
+                Add to Cart
+
+            </button>
 
             <button onClick={beginEdit}>
                 Edit
