@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "./api.js";
 
 function DiscMagForm({ onAdd }) {
     const [discMag, setDiscMag] = useState({
@@ -15,16 +16,12 @@ function DiscMagForm({ onAdd }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const response = await fetch("/api/rest/discmags", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(discMag)
-        });
+        const response = await api.post(
+            "/discmags",
+            discMag
+        );
 
-        if (response.ok) {
-            const savedDiscMag = await response.json();
+        const savedDiscMag = response.data;
 
             onAdd(savedDiscMag);
 
@@ -38,7 +35,6 @@ function DiscMagForm({ onAdd }) {
                 issueNumber: 0,
                 hasDisc: false
             });
-        }
     };
 
     return (

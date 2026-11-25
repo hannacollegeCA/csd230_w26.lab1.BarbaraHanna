@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import MagazineForm from './MagazineForm.jsx';
 import Magazine from './Magazine.jsx';
+import api from './api.js';
 
 export default function MagazineList() {
     const [magazines, setMagazines] = useState([]);
@@ -8,15 +9,17 @@ export default function MagazineList() {
     const [error, setError] = useState('');
     useEffect(() => {
         let active = true;
-        fetch('/api/rest/magazines')
+        api.get('/magazines')
             .then(res => {
-                if (!res.ok) throw new Error(`Load failed (${res.status})`);
-                return res.json();
+                if (active) setMagazines(res.data);
             })
-            .then(data => { if (active) setMagazines(data); })
-            .catch(err => { if (active) setError(err.message); })
-            .finally(() => { if (active) setLoading(false); });
-        return () => { active = false; };
+            .catch(err => {
+                if (active) setError(err.message); })
+            .finally(() => {
+                if (active) setLoading(false);
+            });
+        return () => {
+            active = false; };
     }, []);
 
     async function handleDeleteMagazine(id) {
@@ -25,13 +28,7 @@ export default function MagazineList() {
         setError('');
 
         try {
-            const res = await fetch(`/api/rest/magazines/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!res.ok) {
-                throw new Error(`Delete failed (${res.status})`);
-            }
+            await api.delete(`/magazines/${id}`);
 
             setMagazines(previous =>
                 previous.filter(
@@ -45,17 +42,12 @@ export default function MagazineList() {
     }
 
     async function handleUpdateMagazine(id, data) {
-        const res = await fetch(`/api/rest/magazines/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+        const res = await api.put(
+            `/magazines/${id}`,
+            data
+        );
 
-        if (!res.ok) {
-            throw new Error(`Update failed (${res.status})`);
-        }
-
-        const saved = await res.json();
+        const saved = res.data;
 
         setMagazines(previous =>
             previous.map(magazine =>

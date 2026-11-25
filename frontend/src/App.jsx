@@ -8,7 +8,7 @@ import Home from './Home.jsx';
 import MagazineList from './MagazineList.jsx';
 import DiscMagForm from "./DiscMagForm";
 import DiscMagList from "./DiscMagList";
-
+import api from './api.js';
 
 
 export default function App() {
@@ -18,32 +18,26 @@ export default function App() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // DiscMags
     useEffect(() => {
-        fetch("/api/rest/discmags")
-            .then((response) => response.json())
-            .then((data) => setDiscMags(data));
+        api.get("/discmags")
+            .then((response) => setDiscMags(response.data))
+            .catch(err => console.error(err));
     }, []);
 
     const addDiscMag = (discMag) => {
         setDiscMags(previous => [...previous, discMag]);
-
         navigate("/discmags");
     };
 
     async function handleUpdateDiscMag(id, data) {
-        const response = await fetch(`/api/rest/discmags/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
+        const response = await api.put(
+            `/discmags/${id}`,
+            data
+        );
 
-        if (!response.ok) {
-            throw new Error(`Update failed (${response.status})`);
-        }
 
-        const savedDiscMag = await response.json();
+        const savedDiscMag = response.data;
 
         setDiscMags(previous =>
             previous.map(dm =>
@@ -58,34 +52,19 @@ export default function App() {
             return;
         }
 
-        const response = await fetch(
-            `/api/rest/discmags/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(`Delete failed (${response.status})`);
-        }
+        await api.delete(`/discmags/${id}`);
 
         setDiscMags(previous =>
             previous.filter(dm => dm.id !== id)
         );
     }
 
-
-
-
     useEffect(() => {
         let active = true;
-        fetch('/api/rest/books')
-            .then(res => {
-                if (!res.ok) throw new Error(`Load failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (active) setBooks(data);
+
+        api.get('/books')
+            .then(response => {
+                if (active) setBooks(response.data);
             })
             .catch(err => {
                 if (active) setError(err.message);
@@ -93,10 +72,13 @@ export default function App() {
             .finally(() => {
                 if (active) setLoading(false);
             });
+
         return () => {
             active = false;
         };
     }, []);
+
+
 
     function handleBookAdded(savedBook) {
         setBooks(previous => [...previous, savedBook]);
@@ -104,19 +86,9 @@ export default function App() {
     }
 
     async function handleUpdateBook(id, data) {
-        const response = await fetch(`/api/rest/books/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+        const response = await api.put(`/books/${id}`, data);
 
-        if (!response.ok) {
-            throw new Error(`Update failed (${response.status})`);
-        }
-
-        const savedBook = await response.json();
+        const savedBook = response.data;
 
         setBooks(previous =>
             previous.map(book =>
@@ -130,15 +102,7 @@ export default function App() {
 
         setError('');
 
-        try {
-            const response = await fetch(
-                `/api/rest/books/${id}`,
-                {method: 'DELETE'}
-            );
-
-            if (!response.ok) {
-                throw new Error(`Delete failed (${response.status})`);
-            }
+        try {await api.delete(`/books/${id}`);
 
             setBooks(previous =>
                 previous.filter(book => book.id !== id)

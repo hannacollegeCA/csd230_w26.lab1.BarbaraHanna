@@ -59,6 +59,7 @@ public class DiscMagRestController {
                     discMag.setAuthor(newDiscMag.getAuthor());
                     discMag.setPrice(newDiscMag.getPrice());
                     discMag.setCopies(newDiscMag.getCopies());
+                    discMag.setPages(newDiscMag.getPages());
                     discMag.setPublisher(newDiscMag.getPublisher());
                     discMag.setIssueNumber(newDiscMag.getIssueNumber());
                     discMag.setHasDisc(newDiscMag.isHasDisc());

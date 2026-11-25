@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import api from './api.js';
+
 
 export default function AddBookForm({ onBookAdded }) {
     const [title, setTitle] = useState('');
@@ -12,17 +14,24 @@ export default function AddBookForm({ onBookAdded }) {
         event.preventDefault();
         setError(''); setSaving(true);
         try {
-            const response = await fetch('/api/rest/books', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, author, price: Number(price), copies: Number(copies) })
+            const response = await api.post('/books', {
+                title,
+                author,
+                price: Number(price),
+                copies: Number(copies)
             });
-            if (!response.ok) throw new Error(`Save failed (${response.status})`);
-            const savedBook = await response.json();
+
+            const savedBook = response.data;
+
             onBookAdded(savedBook);
-            setTitle(''); setAuthor(''); setPrice(''); setCopies(10);
-        } catch (err) { setError(err.message); }
-        finally { setSaving(false); }
+            setTitle('');
+            setAuthor('');
+            setPrice('');
+            setCopies(10);
+        } catch (err) {
+            setError(err.message); }
+        finally {
+            setSaving(false); }
     }
 
     return <form onSubmit={handleSubmit}>
