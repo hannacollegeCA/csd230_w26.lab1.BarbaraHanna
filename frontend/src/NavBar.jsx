@@ -31,9 +31,10 @@ export default function NavBar({ cartCount }) {
                 Disc Magazines
             </Link>
 
+            {isAdmin && (
             <Link to="/add-discmag">
                 Add Disc Magazine
-            </Link>
+            </Link> )}
 
             <Link to="/cart">
                 Cart ({cartCount})

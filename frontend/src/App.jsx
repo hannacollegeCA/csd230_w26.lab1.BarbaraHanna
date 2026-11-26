@@ -55,6 +55,8 @@ function BookApp() {
     const navigate = useNavigate();
 
     const [discMags, setDiscMags] = useState([]);
+    const [discMagLoading, setDiscMagLoading] = useState(true);
+    const [discMagError, setDiscMagError] = useState('');
 
     const { token, isAdmin } = useAuth();
 
@@ -68,16 +70,51 @@ function BookApp() {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        let active = true;
+
+        const isCurrent = () =>
+            active &&
+            globalThis.localStorage?.getItem('token') === token;
+
+        setDiscMagLoading(true);
+        setDiscMagError('');
+
         api.get('/discmags')
             .then(response => {
-                setDiscMags(response.data);
+                if (isCurrent()) {
+                    setDiscMags(response.data);
+                }
             })
-            .catch(console.error);
-    }, []);
+            .catch(err => {
+                if (isCurrent()) {
+                    setDiscMagError(
+                        err.response?.status === 403
+                            ? 'You do not have permission to view Disc Magazines.'
+                            : 'Unable to load Disc Magazines.'
+                    );
+                }
+            })
+            .finally(() => {
+                if (isCurrent()) {
+                    setDiscMagLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [token]);
 
 
 
     const addDiscMag = (discMag) => {
+        if (
+            !token ||
+            globalThis.localStorage?.getItem('token') !== token
+        ) {
+            return;
+        }
+
         setDiscMags(previous => [
             ...previous,
             discMag
@@ -86,28 +123,46 @@ function BookApp() {
         navigate('/discmags');
     };
 
-    async function handleUpdateDiscMag(id, data) {
+    async function handleUpdateDiscMag(id, data) { const requestToken = token;
 
-        const response =
-            await api.put(
+        const isCurrent = () =>
+            requestToken &&
+            globalThis.localStorage?.getItem('token') === requestToken;
+
+        setDiscMagError('');
+
+        try {
+            const response = await api.put(
                 `/discmags/${id}`,
                 data
             );
 
-        const savedDiscMag =
-            response.data;
+            if (!isCurrent()) return;
 
-        setDiscMags(previous =>
-            previous.map(dm =>
-                dm.id === id
-                    ? savedDiscMag
-                    : dm
-            )
-        );
+            const savedDiscMag = response.data;
+
+            setDiscMags(previous =>
+                previous.map(dm =>
+                    dm.id === id
+                        ? savedDiscMag
+                        : dm
+                )
+            );
+
+        } catch (err) {
+            if (isCurrent()) {
+                setDiscMagError(
+                    err.response?.status === 403
+                        ? 'You do not have permission to edit this Disc Magazine.'
+                        : 'Unable to update the Disc Magazine.'
+                );
+            }
+
+            throw err;
+        }
     }
 
     async function handleDeleteDiscMag(id) {
-
         if (
             !window.confirm(
                 'Delete this disc magazine?'
@@ -116,15 +171,32 @@ function BookApp() {
             return;
         }
 
-        await api.delete(
-            `/discmags/${id}`
-        );
+        const requestToken = token;
 
-        setDiscMags(previous =>
-            previous.filter(
-                dm => dm.id !== id
-            )
-        );
+        const isCurrent = () =>
+            requestToken &&
+            globalThis.localStorage?.getItem('token') === requestToken;
+
+        setDiscMagError('');
+
+        try {
+            await api.delete(`/discmags/${id}`);
+
+            if (!isCurrent()) return;
+
+            setDiscMags(previous =>
+                previous.filter(dm => dm.id !== id)
+            );
+
+        } catch (err) {
+            if (isCurrent()) {
+                setDiscMagError(
+                    err.response?.status === 403
+                        ? 'You do not have permission to delete this Disc Magazine.'
+                        : 'Unable to delete the Disc Magazine.'
+                );
+            }
+        }
     }
 
     useEffect(() => {
@@ -357,8 +429,13 @@ function BookApp() {
                     element={
                         <DiscMagList
                             discMags={discMags}
+                            loading={discMagLoading}
+                            error={discMagError}
                             onDelete={handleDeleteDiscMag}
                             onUpdate={handleUpdateDiscMag}
+                            onAddToCart={changeCart}
+                            cartPending={cartLoading || cartPending}
+                            canManage={isAdmin}
                         />
                     }
                 />
@@ -366,12 +443,17 @@ function BookApp() {
                 <Route
                     path="/add-discmag"
                     element={
-                        <DiscMagForm
-                            onAdd={addDiscMag}
-                        />
+                        isAdmin ? (
+                            <DiscMagForm
+                                onAdd={addDiscMag}
+                            />
+                        ) : (
+                            <p role="alert">
+                                Administrator access is required.
+                            </p>
+                        )
                     }
                 />
-
                 <Route
                     path="/cart"
                     element={

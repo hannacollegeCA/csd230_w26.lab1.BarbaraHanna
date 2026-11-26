@@ -3,7 +3,10 @@ import { useState } from "react";
 export default function DiscMag({
                                     discMag,
                                     onDelete,
-                                    onUpdate
+                                    onUpdate,
+                                    onAddToCart,
+                                    cartPending,
+                                    canManage
                                 }) {
 
     const [editing, setEditing] = useState(false);
@@ -16,7 +19,13 @@ export default function DiscMag({
     const [issueNumber, setIssueNumber] = useState(discMag.issueNumber);
     const [hasDisc, setHasDisc] = useState(discMag.hasDisc);
 
+    const [error, setError] = useState("");
+    const [saving, setSaving] = useState(false);
+
     async function saveChanges() {
+
+        setError("");
+        setSaving(true);
 
         try {
             await onUpdate(
@@ -35,20 +44,32 @@ export default function DiscMag({
             );
 
             setEditing(false);
+
         } catch (err) {
-            console.error(err);
+            setError(
+                err.response?.status === 403
+                    ? "You do not have permission to edit this Disc Magazine."
+                    : "Unable to update the Disc Magazine. Please try again."
+            );
+        } finally {
+            setSaving(false);
         }
     }
+
 
     if (editing) {
         return (
             <article>
+                <h3>Edit Disc Magazine</h3>
+
+                {error && <p role="alert">{error}</p>}
 
                 <input
                     value={title}
                     onChange={(e) =>
                         setTitle(e.target.value)
                     }
+                    placeholder="Title"
                 />
 
                 <input
@@ -101,15 +122,20 @@ export default function DiscMag({
                 </label>
 
                 <button
+                    type="button"
                     onClick={saveChanges}
+                    disabled={saving}
                 >
-                    Save
+                    {saving ? "Saving..." : "Save"}
                 </button>
 
                 <button
-                    onClick={() =>
-                        setEditing(false)
-                    }
+                    type="button"
+                    onClick={() => {
+                        setEditing(false);
+                        setError("");
+                    }}
+                    disabled={saving}
                 >
                     Cancel
                 </button>
@@ -136,20 +162,37 @@ export default function DiscMag({
             </p>
 
             <button
+                type="button"
+                disabled={cartPending}
                 onClick={() =>
-                    setEditing(true)
+                    onAddToCart(discMag.id)
                 }
+            >
+                Add To Cart
+            </button>
+
+            {canManage && (
+            <button
+                type="button"
+                onClick={() => {
+                    setError("");
+                    setEditing(true)
+                }}
             >
                 Edit
             </button>
+            )}
 
+            {canManage && (
             <button
+                type="button"
                 onClick={() =>
                     onDelete(discMag.id)
                 }
             >
                 Delete
             </button>
+            )}
 
         </article>
     );

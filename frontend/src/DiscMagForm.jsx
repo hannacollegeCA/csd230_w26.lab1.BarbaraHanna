@@ -1,7 +1,9 @@
 import { useState } from "react";
+import useAuth from "./useAuth.js";
 import api from "./api.js";
 
 function DiscMagForm({ onAdd }) {
+    const { token } = useAuth();
     const [discMag, setDiscMag] = useState({
         title: "",
         author: "",
@@ -13,13 +15,35 @@ function DiscMagForm({ onAdd }) {
         hasDisc: false
     });
 
+    const [error, setError] = useState("");
+    const [saving, setSaving] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const response = await api.post(
-            "/discmags",
-            discMag
-        );
+        const requestToken = token;
+
+        const isCurrent = () =>
+            requestToken &&
+            globalThis.localStorage?.getItem("token") === requestToken;
+
+        if (!isCurrent()) {
+            setError("Your session is no longer valid. Please log in again.");
+            return;
+        }
+
+        setError("");
+        setSaving(true);
+
+        try {
+            const response = await api.post(
+                "/discmags",
+                discMag
+            );
+
+            if (!isCurrent()) return;
+
+
 
         const savedDiscMag = response.data;
 
@@ -35,11 +59,27 @@ function DiscMagForm({ onAdd }) {
                 issueNumber: 0,
                 hasDisc: false
             });
-    };
+
+    } catch (err) {
+        if (isCurrent()) {
+            setError(
+                err.response?.status === 403
+                    ? "You do not have permission to add Disc Magazines."
+                    : "Unable to save the Disc Magazine. Please try again."
+            );
+        }
+    } finally {
+        if (isCurrent()) {
+            setSaving(false);
+        }
+    }
+};
 
     return (
         <form onSubmit={handleSubmit}>
             <h2>Add Disc Magazine</h2>
+
+            {error && <p role="alert">{error}</p>}
 
             <input
                 placeholder="Title"
@@ -130,8 +170,8 @@ function DiscMagForm({ onAdd }) {
                 />
             </label>
 
-            <button type="submit">
-                Save
+            <button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save"}
             </button>
         </form>
     );
